@@ -2,7 +2,7 @@ Function Get-SpotlightFiles {
     If(-not (Test-Path "$env:USERPROFILE\Pictures\Spotlight")) {
         New-Item "$env:USERPROFILE\Pictures\Spotlight" -ItemType Directory
     }
-    Get-ChildItem "C:\Users\mads.aune\AppData\Local\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" | ForEach-Object {
+    Get-ChildItem "$env:USERPROFILE\AppData\Local\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" | ForEach-Object {
         $NewFilename = $_.Name + ".jpeg"
         # If(Test-Path (Join-Path "$env:USERPROFILE\Pictures\Spotlight" $NewFilename)) {
         #     $NewFilename = $_.Name + "(2).jpeg"
