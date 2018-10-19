@@ -1,30 +1,58 @@
-Function Get-SpotlightFiles {
-    If(-not (Test-Path "$env:USERPROFILE\Pictures\Spotlight")) {
-        New-Item "$env:USERPROFILE\Pictures\Spotlight" -ItemType Directory
-    }
-    Get-ChildItem "$env:USERPROFILE\AppData\Local\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" | ForEach-Object {
-        $NewFilename = $_.Name + ".jpeg"
-        # If(Test-Path (Join-Path "$env:USERPROFILE\Pictures\Spotlight" $NewFilename)) {
-        #     $NewFilename = $_.Name + "(2).jpeg"
-        # }
-        Copy-Item $_.Fullname (Join-Path "$env:USERPROFILE\Pictures\Spotlight" $NewFilename)
-    }
-}
+<#
 
-Function Remove-UnwantedSpotlightImages {
-    $ImagesToMove = @()
-    $AllImages = Get-ChildItem "$env:USERPROFILE\Pictures\Spotlight\*.jpeg"
-    $AllImages | ForEach-Object {
-        $image = New-Object System.Drawing.Bitmap $_.FullName
-        If($image.Width -ne 1920) {
-            $ImagesToMove += $_.FullName
-        }
-        $image.Dispose()
-    }
+.SYNOPSIS
 
-    $ImagesToMove | Remove-Item
-}
+    A script for extracting Windows Spotlight images.
+
+.DESCRIPTION
+
+    This script extracts Windows Spotlight images that appears on your lockscreen.
+    Its recommended you run this script as a scheduled job every day.
+
+.NOTES
+
+    File Name:  Get-AutoHelp.ps1
+    Author:     Mads Moi-Aune <mads@moiaune.no>
+
+.LINK
+
+    Github Repo: https://github.com/madsaune/Get-Windows-Spotlight-Images
+
+.EXAMPLE
+
+    ./Get-WindowsspotlightImages.ps1 -OutputFolder $env:USERPROFILE\Pictures\Spotlight
+
+#>
+
+Param (
+    [String] $OutputFolder = "$env:USERPROFILE\Pictures\Spotlight"
+)
 
 Add-Type -AssemblyName System.Drawing
-Get-SpotlightFiles
-Remove-UnwantedSpotlightImages
+
+
+If(-not (Test-Path $OutputFolder)) {
+    New-Item $OutputFolder -ItemType Directory | Out-Null
+}
+
+Get-ChildItem "$env:USERPROFILE\AppData\Local\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" | ForEach-Object {
+
+    $NewFilename = $_.Name + ".jpeg"
+    If(-not (Test-Path (Join-Path $OutputFolder $NewFilename))) {
+        Copy-Item $_.Fullname (Join-Path $OutputFolder $NewFilename)
+    }
+
+}
+
+$ImagesToRemove = @()
+$AllImages = Get-ChildItem (Join-Path $OutputFolder "*.jpeg")
+$AllImages | ForEach-Object {
+    $image = New-Object System.Drawing.Bitmap $_.FullName
+    If(-not ($image.Width -ge 1920)) {
+        $ImagesToRemove += $_.FullName
+    } else {
+    }
+    $image.Dispose()
+}
+
+$ImagesToRemove | Remove-Item
